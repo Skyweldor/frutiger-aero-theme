@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Tab</title>
+<link rel="stylesheet" href="newtab.css">
+<!-- Loaded in the head so the graphics tier is set before first paint. -->
+<script src="newtab.js"></script>
+</head>
+<body>
+
+<main class="stage">
+  <form class="search" id="search" role="search">
+    <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+    <input id="q" type="search" placeholder="Search the web" aria-label="Search the web"
+           autocomplete="off" spellcheck="false">
+    <button class="go" type="submit" aria-label="Search">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12h13M12.5 6.5 18 12l-5.5 5.5" fill="none" stroke="currentColor"
+              stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </form>
+  <p class="hint" id="hint" hidden>Preview only: search runs once the extension is installed in Chrome.</p>
+
+  <nav class="tiles" id="tiles" aria-label="Most visited sites"></nav>
+</main>
+
+<aside class="gadgets" aria-label="Gadgets">
+  <section class="clock" id="clock" aria-label="Clock">
+    <svg viewBox="0 0 200 200" role="img" aria-labelledby="clock-label">
+      <title id="clock-label">Clock</title>
+      <defs>
+        <linearGradient id="bezel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset=".35" stop-color="#a9def5"/>
+          <stop offset=".7" stop-color="#3a9bcc"/>
+          <stop offset="1" stop-color="#d2f4ff"/>
+        </linearGradient>
+        <radialGradient id="face" cx=".5" cy=".3" r=".85">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset=".55" stop-color="#e6f7ff"/>
+          <stop offset="1" stop-color="#b4e1f6"/>
+        </radialGradient>
+        <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff" stop-opacity=".85"/>
+          <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <circle cx="100" cy="100" r="97" fill="url(#bezel)" stroke="rgba(0,60,95,.45)" stroke-width="1"/>
+      <circle cx="100" cy="100" r="84" fill="url(#face)" stroke="rgba(0,60,95,.4)" stroke-width="1.5"/>
+      <ellipse cx="100" cy="60" rx="64" ry="40" fill="url(#gloss)" pointer-events="none"/>
+      <g id="clock-ticks"></g>
+      <g class="clock-num">
+        <text x="100" y="44">12</text>
+        <text x="163" y="107">3</text>
+        <text x="100" y="170">6</text>
+        <text x="37" y="107">9</text>
+      </g>
+      <line id="hand-h" class="hand hand-h" x1="100" y1="108" x2="100" y2="58"/>
+      <line id="hand-m" class="hand hand-m" x1="100" y1="112" x2="100" y2="34"/>
+      <line id="hand-s" class="hand hand-s" x1="100" y1="118" x2="100" y2="28"/>
+      <circle cx="100" cy="100" r="5.5" fill="#0b3a55"/>
+      <circle cx="100" cy="100" r="2" fill="#ff7a3d"/>
+    </svg>
+  </section>
+
+  <section class="calendar glass" id="calendar" aria-label="Calendar"></section>
+</aside>
+
+<button class="gear glass" id="gear" type="button" aria-label="Settings"
+        aria-expanded="false" aria-controls="settings">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.34 3.34"/>
+    <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="3.2"/>
+  </svg>
+</button>
+
+<section class="settings glass" id="settings" aria-label="Settings" hidden>
+  <fieldset>
+    <legend>Graphics</legend>
+    <div class="segmented" role="radiogroup" aria-label="Graphics quality">
+      <label><input type="radio" name="gfx" value="auto"><span>Auto</span></label>
+      <label><input type="radio" name="gfx" value="full"><span>Full glass</span></label>
+      <label><input type="radio" name="gfx" value="lite"><span>Lite</span></label>
+    </div>
+    <p class="note" id="gfx-note"></p>
+  </fieldset>
+  <fieldset>
+    <legend>Gadgets</legend>
+    <label class="check"><input type="checkbox" id="show-clock"> Clock</label>
+    <label class="check"><input type="checkbox" id="show-calendar"> Calendar</label>
+  </fieldset>
+</section>
+
+</body>
+</html>

@@ -10,3 +10,4 @@ settings-snippets.json
 screenshots/**
 images/screenshot-*
 .git/**
+chrome-newtab/**
