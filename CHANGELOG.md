@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- New **Frutiger Aero (Night)** color theme: midnight navy, moonlit cyan and dim teal.
+- New **Night Wallpaper + Full Glass** mode, with a CSS moonlit sky fallback until you add `assets/frutiger-aero-night-wallpaper.jpg`.
+- `npm run build:embed` now generates both wallpapers; disabling glass restores your previous `window.controlsStyle`.
+
 ## 1.0.0
 
 - Two color themes: **Frutiger Aero (Daylight Glass)** and **Frutiger Aero (Deep Aqua)**.

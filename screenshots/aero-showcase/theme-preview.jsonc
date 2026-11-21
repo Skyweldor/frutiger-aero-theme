@@ -5,7 +5,8 @@
 
   // Glass mode (added for you by "Frutiger Aero: Enable Glass Mode")
   "vscode_custom_css.imports": [
-    "file:///C:/path/to/frutiger-aero/css/frutiger-aero-full-wallpaper.css"
+    "file:///C:/path/to/frutiger-aero/css/frutiger-aero-full-wallpaper.css",
+    "file:///C:/path/to/frutiger-aero/css/frutiger-aero-wallpaper-embed.css"
   ],
 
   "workbench.colorCustomizations": {

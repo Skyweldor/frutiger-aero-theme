@@ -1,24 +1,34 @@
 {
   "// ========================================================================": "",
-  "// 1. BASE COLOR THEME (Choose either Daylight Glass or Deep Aqua)": "",
+  "// 1. BASE COLOR THEME (Daylight Glass, Deep Aqua or Night)": "",
   "// ========================================================================": "",
   "workbench.colorTheme": "Frutiger Aero (Daylight Glass)",
 
   "// ========================================================================": "",
-  "// 2. OPTION A: Using 'Custom CSS and JS Loader' (be5invis.vscode-custom-css)": "",
-  "//    Uncomment ONE of the three CSS files below to choose your glass mode,": "",
-  "//    then run Command Palette -> 'Enable Custom CSS and JS'": "",
+  "// 2. MANUAL GLASS SETUP (optional)": "",
+  "//    'Frutiger Aero: Enable Glass Mode' does this for you automatically.": "",
+  "//    To do it manually, replace C:/path/to/frutiger-aero with your install path.": "",
+  "//    Scenic Wallpaper + Full Glass needs BOTH CSS files, in this order.": "",
+  "//    For another mode, replace those lines with one of the commented options below.": "",
+  "//    Then run Command Palette -> 'Enable Custom CSS and JS' and restart VS Code.": "",
   "// ========================================================================": "",
   "vscode_custom_css.imports": [
-    "file:///C:/path/to/frutiger-aero/css/frutiger-aero-full-wallpaper.css"
+    "file:///C:/path/to/frutiger-aero/css/frutiger-aero-full-wallpaper.css",
+    "file:///C:/path/to/frutiger-aero/css/frutiger-aero-wallpaper-embed.css"
+    // Night Wallpaper + Full Glass (replace BOTH lines above with these THREE):
+    // "file:///C:/path/to/frutiger-aero/css/frutiger-aero-full-wallpaper.css"
+    // "file:///C:/path/to/frutiger-aero/css/frutiger-aero-night-overrides.css"
+    // "file:///C:/path/to/frutiger-aero/css/frutiger-aero-night-wallpaper-embed.css"
+    // Pure CSS Mesh & Orbs / Minimal Glass Chrome: use ONE of these instead:
     // "file:///C:/path/to/frutiger-aero/css/frutiger-aero-mesh-orbs.css"
     // "file:///C:/path/to/frutiger-aero/css/frutiger-aero-minimal-glass.css"
   ],
 
   "// ========================================================================": "",
-  "// 3. RECOMMENDED WINDOW SETTING FOR AUTHENTIC AERO TITLE BAR": "",
+  "// 3. AERO CAPTION BUTTONS (Windows/Linux)": "",
+  "//    The extension sets this automatically; it is needed for manual setup too.": "",
   "// ========================================================================": "",
-  "window.titleBarStyle": "custom",
+  "window.controlsStyle": "custom",
   "editor.semanticHighlighting.enabled": true,
   "editor.bracketPairColorization.enabled": true
 }

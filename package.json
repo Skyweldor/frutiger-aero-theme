@@ -50,6 +50,11 @@
         "label": "Frutiger Aero (Deep Aqua)",
         "uiTheme": "vs-dark",
         "path": "./themes/frutiger-aero-deep-aqua-color-theme.json"
+      },
+      {
+        "label": "Frutiger Aero (Night)",
+        "uiTheme": "vs-dark",
+        "path": "./themes/frutiger-aero-night-color-theme.json"
       }
     ],
     "commands": [

@@ -4,7 +4,9 @@
 $ErrorActionPreference = "Stop"
 
 $SourceDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ExtName   = "synthcity-digilabs.frutiger-aero-theme-1.0.0"
+$Package   = Get-Content -Raw (Join-Path $SourceDir 'package.json') | ConvertFrom-Json
+$ExtName   = "$($Package.publisher).$($Package.name)-$($Package.version)"
+$ExtPrefix = "$($Package.publisher).$($Package.name)-"
 
 $Targets = @(
     (Join-Path $HOME ".vscode\extensions"),
@@ -13,6 +15,13 @@ $Targets = @(
 
 foreach ($BaseDir in $Targets) {
     if (Test-Path $BaseDir) {
+        # Drop older copies of this extension so VS Code can't load a stale version.
+        Get-ChildItem -Path $BaseDir -Directory -Filter "$ExtPrefix*" | ForEach-Object {
+            if ($_.Name -ne $ExtName -and $_.FullName -ne $SourceDir) {
+                Write-Host "  Removing old version: $($_.FullName)" -ForegroundColor DarkGray
+                Remove-Item -Path $_.FullName -Recurse -Force
+            }
+        }
         $DestDir = Join-Path $BaseDir $ExtName
         Write-Host "Installing Frutiger Aero Theme Suite to: $DestDir" -ForegroundColor Cyan
         if (Test-Path $DestDir) {

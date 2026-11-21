@@ -13,11 +13,16 @@ const LOADER_APPLY_CMD = 'extension.updateCustomCSS';
 const LOADER_REMOVE_CMD = 'extension.uninstallCustomCSS';
 const GLOBAL = vscode.ConfigurationTarget.Global;
 
-const THEMES = ['Frutiger Aero (Daylight Glass)', 'Frutiger Aero (Deep Aqua)'];
+const THEMES = [
+  'Frutiger Aero (Daylight Glass)',
+  'Frutiger Aero (Deep Aqua)',
+  'Frutiger Aero (Night)',
+];
 
 // Matches any stylesheet this extension has ever written into the imports list,
 // from any install location or version.
-const OUR_CSS = /frutiger-aero-(full-wallpaper|mesh-orbs|minimal-glass|wallpaper-embed)\.css$/;
+const OUR_CSS =
+  /frutiger-aero-(full-wallpaper|mesh-orbs|minimal-glass|wallpaper-embed|night-overrides|night-wallpaper-embed)\.css$/;
 
 const MODES = [
   {
@@ -26,6 +31,18 @@ const MODES = [
     description: 'Recommended',
     detail: 'Wallpaper behind frosted, see-through panels.',
     files: ['frutiger-aero-full-wallpaper.css', 'frutiger-aero-wallpaper-embed.css'],
+    seeThroughPanels: true,
+  },
+  {
+    id: 'night',
+    label: 'Night Wallpaper + Full Glass',
+    description: 'Nocturnal',
+    detail: 'Moonlit night wallpaper behind frosted blue-teal glass.',
+    files: [
+      'frutiger-aero-full-wallpaper.css',
+      'frutiger-aero-night-overrides.css',
+      'frutiger-aero-night-wallpaper-embed.css',
+    ],
     seeThroughPanels: true,
   },
   {
@@ -74,7 +91,7 @@ async function enableGlass(context) {
 
   await writeImports(cssUrls(context, mode));
   await setSeeThroughColors(mode.seeThroughPanels);
-  await setCustomWindowControls(true);
+  await setCustomWindowControls(true, context);
   await context.globalState.update('glassMode', mode.id);
 
   await applyWithLoader(
@@ -87,7 +104,7 @@ async function enableGlass(context) {
 async function disableGlass(context) {
   const remaining = await writeImports([]);
   await setSeeThroughColors(false);
-  await setCustomWindowControls(false);
+  await setCustomWindowControls(false, context);
   await context.globalState.update('glassMode', undefined);
 
   if (!vscode.extensions.getExtension(LOADER_ID)) {
@@ -166,13 +183,29 @@ async function setSeeThroughColors(enable) {
     .update('colorCustomizations', Object.keys(all).length ? all : undefined, GLOBAL);
 }
 
-/** HTML window buttons, so the stylesheet can draw Aero caption buttons. */
-async function setCustomWindowControls(enable) {
+/**
+ * HTML window buttons, so the stylesheet can draw Aero caption buttons.
+ * Remembers the user's previous setting so disabling glass restores it instead
+ * of clearing a value that was already set before glass mode was enabled.
+ * @param {boolean} enable
+ * @param {vscode.ExtensionContext} context
+ */
+async function setCustomWindowControls(enable, context) {
   if (process.platform === 'darwin') return; // macOS keeps native traffic lights
   try {
-    await vscode.workspace
-      .getConfiguration('window')
-      .update('controlsStyle', enable ? 'custom' : undefined, GLOBAL);
+    const config = vscode.workspace.getConfiguration('window');
+    const savedKey = 'controlsStyleBeforeGlass';
+    if (enable) {
+      // Switching modes re-enables glass; keep the value saved the first time.
+      if (context.globalState.get(savedKey) === undefined) {
+        await context.globalState.update(savedKey, globalValue('window', 'controlsStyle') ?? null);
+      }
+      await config.update('controlsStyle', 'custom', GLOBAL);
+    } else {
+      const previous = context.globalState.get(savedKey);
+      await config.update('controlsStyle', previous ?? undefined, GLOBAL);
+      await context.globalState.update(savedKey, undefined);
+    }
   } catch {
     // Older VS Code without window.controlsStyle: buttons stay native, rest still works.
   }
