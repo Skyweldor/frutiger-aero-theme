@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Frutiger Aero Glass New Tab",
   "short_name": "Aero New Tab",
-  "version": "0.1.0",
-  "description": "A glossy Frutiger Aero new tab page: scenic wallpaper, frosted glass search, your most visited sites, and clock and calendar gadgets.",
+  "version": "0.2.0",
+  "description": "A glossy Frutiger Aero new tab page: a choice of wallpapers, a glass search box, your most visited sites in bubbles, and clock and calendar gadgets.",
   "icons": {
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",

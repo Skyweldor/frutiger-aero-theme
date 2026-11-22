@@ -9,7 +9,14 @@ const isExtension = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrom
 // ---------------------------------------------------------------------------
 // Settings (kept in localStorage; the page works without it)
 // ---------------------------------------------------------------------------
-const DEFAULTS = { gfx: 'auto', clock: true, calendar: true };
+const DEFAULTS = {
+  gfx: 'auto',
+  tiles: 'bubble',
+  wallpaper: 'bubbles-day',
+  cycle: false,
+  clock: true,
+  calendar: true,
+};
 
 function loadSettings() {
   try {
@@ -47,6 +54,65 @@ function applyTier() {
 }
 
 applyTier(); // runs in <head>, before first paint
+
+// ---------------------------------------------------------------------------
+// Tile styles: bubble, clear or frost (CSS does the rest)
+// ---------------------------------------------------------------------------
+function applyTiles() {
+  root.dataset.tiles = settings.tiles;
+}
+
+applyTiles();
+
+// ---------------------------------------------------------------------------
+// Wallpaper: the list comes from wallpapers.js (see wallpapers/build_page_assets.py)
+// ---------------------------------------------------------------------------
+const wallpapers = typeof WALLPAPERS !== 'undefined' ? WALLPAPERS : [];
+
+function applyWallpaper() {
+  const chosen = wallpapers.find((wp) => wp.id === settings.wallpaper) || wallpapers[0];
+  if (chosen) root.style.setProperty('--wallpaper', `url("wallpapers/${chosen.id}.jpg")`);
+}
+
+// "New wallpaper on every new tab": step to the next one in the list each
+// time the page opens, wrapping round at the end.
+if (settings.cycle && wallpapers.length > 1) {
+  const current = wallpapers.findIndex((wp) => wp.id === settings.wallpaper);
+  settings.wallpaper = wallpapers[(current + 1) % wallpapers.length].id;
+  saveSettings();
+}
+
+applyWallpaper(); // before first paint, like the tier
+
+// Bubble tiles bend the wallpaper behind them (Full tier only). This draws the
+// displacement map for the #bubble-lens filter: the middle of the bubble is
+// left alone and the picture is pulled outward more and more toward the rim,
+// like looking through a glass ball. Red carries the sideways shift, green
+// the up-down shift, and mid-grey means "no shift".
+function initLens() {
+  const target = document.getElementById('bubble-lens-map');
+  if (!target) return;
+  const size = 96; // the bubble's diameter in CSS pixels (see newtab.css)
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const map = ctx.createImageData(size, size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const nx = (x + 0.5) / (size / 2) - 1;
+      const ny = (y + 0.5) / (size / 2) - 1;
+      const r = Math.hypot(nx, ny);
+      const pull = r < 1 ? r * r : 0; // times (nx, ny): a cubic rise toward the rim
+      const i = (y * size + x) * 4;
+      map.data[i] = 128 - 127 * nx * pull;
+      map.data[i + 1] = 128 - 127 * ny * pull;
+      map.data[i + 2] = 128;
+      map.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(map, 0, 0);
+  target.setAttribute('href', canvas.toDataURL());
+}
 
 // ---------------------------------------------------------------------------
 // Search: hands the query to the user's own default search engine
@@ -104,6 +170,10 @@ function makeTile(site) {
   tile.href = site.url;
   tile.title = name;
 
+  const glass = document.createElement('span');
+  glass.className = 'tile-glass';
+  glass.setAttribute('aria-hidden', 'true');
+
   const orb = document.createElement('span');
   orb.className = 'orb';
   if (isExtension && site.url !== '#') {
@@ -120,7 +190,7 @@ function makeTile(site) {
   label.className = 'tile-label';
   label.textContent = name;
 
-  tile.append(orb, label);
+  tile.append(glass, orb, label);
   return tile;
 }
 
@@ -242,11 +312,61 @@ function describeTier() {
         : 'No blur or motion. Best for slower Chromebooks.';
 }
 
+// The thumbnails are only fetched the first time the panel opens, so a new
+// tab never pays for them.
+function buildWallpaperGrid() {
+  const grid = document.getElementById('wp-grid');
+  if (grid.childElementCount) return;
+  for (const wp of wallpapers) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'wp-thumb';
+    button.title = wp.name;
+    button.dataset.id = wp.id;
+    button.setAttribute('aria-label', wp.name);
+    const thumb = document.createElement('img');
+    thumb.alt = '';
+    thumb.src = `wallpapers/thumbs/${wp.id}.jpg`;
+    button.append(thumb);
+    button.addEventListener('click', () => {
+      settings.wallpaper = wp.id;
+      saveSettings();
+      applyWallpaper();
+      markWallpaper();
+    });
+    grid.append(button);
+  }
+  markWallpaper();
+}
+
+function markWallpaper() {
+  for (const button of document.querySelectorAll('.wp-thumb')) {
+    button.setAttribute('aria-pressed', String(button.dataset.id === settings.wallpaper));
+  }
+  // Credit line for wallpapers that are someone else's work
+  const chosen = wallpapers.find((wp) => wp.id === settings.wallpaper);
+  const credit = document.getElementById('wp-credit');
+  credit.hidden = !(chosen && chosen.credit);
+  if (credit.hidden) return;
+  const text = `${chosen.name}: ${chosen.credit}`;
+  if (chosen.page) {
+    const link = document.createElement('a');
+    link.href = chosen.page;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = text;
+    credit.replaceChildren(link);
+  } else {
+    credit.textContent = text;
+  }
+}
+
 function initSettings() {
   const gear = document.getElementById('gear');
   const panel = document.getElementById('settings');
 
   const setOpen = (open) => {
+    if (open) buildWallpaperGrid();
     panel.hidden = !open;
     gear.setAttribute('aria-expanded', String(open));
   };
@@ -268,6 +388,23 @@ function initSettings() {
     });
   }
 
+  for (const radio of panel.querySelectorAll('input[name="tiles"]')) {
+    radio.checked = radio.value === settings.tiles;
+    radio.addEventListener('change', () => {
+      settings.tiles = radio.value;
+      saveSettings();
+      applyTiles();
+    });
+  }
+
+  document.getElementById('wp-settings').hidden = wallpapers.length === 0;
+  const cycle = document.getElementById('wp-cycle');
+  cycle.checked = settings.cycle;
+  cycle.addEventListener('change', () => {
+    settings.cycle = cycle.checked;
+    saveSettings();
+  });
+
   for (const [id, key] of [['show-clock', 'clock'], ['show-calendar', 'calendar']]) {
     const box = document.getElementById(id);
     box.checked = settings[key];
@@ -283,6 +420,7 @@ function initSettings() {
 
 // ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+  initLens();
   initSearch();
   initTiles();
   initClock();

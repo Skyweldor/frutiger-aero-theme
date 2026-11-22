@@ -5,6 +5,7 @@
      full  real frosted glass (backdrop-filter blur), glows and motion
      lite  no blur and no motion: flat translucent tints that cost almost
            nothing to draw, for low-end Chromebooks
+   Three tile styles, switched by <html data-tiles="bubble|clear|frost">.
    ========================================================================== */
 
 :root {
@@ -32,6 +33,9 @@
     inset -1px 0 0 rgba(255, 255, 255, 0.35);
   --glow: 0 0 0 3px rgba(124, 232, 255, 0.5), 0 0 26px rgba(124, 232, 255, 0.85);
   --ease: 160ms ease;
+  /* Clear and bubble tiles (section 1b) */
+  --clear-blur: blur(2.5px) saturate(1.4) brightness(1.05);
+  --bubble-lens: url(#bubble-lens) saturate(1.25) brightness(1.04);
 }
 
 /* Lite tier: same shapes, no blur. A denser tint keeps text readable
@@ -42,6 +46,8 @@
   --glass-shadow: 0 4px 10px rgba(0, 45, 75, 0.28);
   --glow: 0 0 0 3px rgba(124, 232, 255, 0.75);
   --ease: 0ms;
+  --clear-blur: none;
+  --bubble-lens: none; /* bubbles keep their rim, film and highlight; only the bending goes */
 }
 
 * { box-sizing: border-box; }
@@ -52,7 +58,8 @@ body {
   margin: 0;
   color: var(--ink);
   font: 14px/1.4 "Segoe UI", Frutiger, "Myriad Pro", "Noto Sans", Roboto, system-ui, sans-serif;
-  background: #3aa0d8 url("wallpaper.jpg") center bottom / cover no-repeat fixed;
+  /* newtab.js sets --wallpaper from the saved choice before first paint */
+  background: #3aa0d8 var(--wallpaper, url("wallpapers/bubbles-day.jpg")) center / cover no-repeat fixed;
   overflow-x: hidden;
 }
 
@@ -152,6 +159,7 @@ body {
 }
 
 .tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -163,20 +171,26 @@ body {
   border-radius: 14px;
   color: var(--ink);
   text-decoration: none;
+  transition: transform var(--ease);
+}
+/* The glass behind a tile is its own layer, so the same tile can be a frosted
+   pane, a clear pane or a bubble (section 1b). */
+.tile-glass {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background: var(--shine), var(--glass-fill);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-edge);
   box-shadow: var(--bevel), var(--glass-shadow);
-  transition: transform var(--ease), box-shadow var(--ease);
+  transition: box-shadow var(--ease);
+  pointer-events: none;
 }
 .tile:hover,
-.tile:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: var(--bevel), var(--glow), var(--glass-shadow);
-}
-:root[data-gfx="lite"] .tile:hover,
-:root[data-gfx="lite"] .tile:focus-visible { transform: none; }
+.tile:focus-visible { transform: translateY(-3px); }
+.tile:hover .tile-glass,
+.tile:focus-visible .tile-glass { box-shadow: var(--bevel), var(--glow), var(--glass-shadow); }
 
 /* White glossy orb that holds the site icon (or a coloured monogram) */
 .orb {
@@ -212,6 +226,7 @@ body {
 }
 
 .tile-label {
+  position: relative;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -220,6 +235,101 @@ body {
   font-weight: 600;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
 }
+
+/* --------------------------------------------------------------------------
+   1b. TILE STYLES   <html data-tiles="bubble|clear|frost">   (frost = above)
+   -------------------------------------------------------------------------- */
+/* Clear and bubble tiles let the wallpaper show through, so their labels
+   carry their own contrast instead of leaning on a frosted backing. */
+:root[data-tiles="clear"] .tile-label,
+:root[data-tiles="bubble"] .tile-label {
+  padding: 0 4px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 30, 50, 0.9), 0 0 8px rgba(0, 30, 50, 0.6);
+}
+
+/* Clear pane: barely tinted, barely blurred, a bright gloss band on top */
+:root[data-tiles="clear"] .tile-glass {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0.16) 46%,
+      rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.13) 100%),
+    rgba(190, 235, 255, 0.08);
+  -webkit-backdrop-filter: var(--clear-blur);
+  backdrop-filter: var(--clear-blur);
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 0 14px rgba(255, 255, 255, 0.22),
+    0 8px 20px rgba(0, 45, 75, 0.24);
+}
+:root[data-tiles="clear"] .tile:hover .tile-glass,
+:root[data-tiles="clear"] .tile:focus-visible .tile-glass {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 0 14px rgba(255, 255, 255, 0.3),
+    var(--glow), 0 8px 20px rgba(0, 45, 75, 0.24);
+}
+
+/* Bubble: the glass shrinks to a circle around the icon, the label sits under it */
+:root[data-tiles="bubble"] .tile {
+  justify-content: flex-start;
+  gap: 6px;
+  height: auto;
+  padding: 0;
+}
+:root[data-tiles="bubble"] .orb {
+  width: 44px;
+  height: 44px;
+  margin: 26px 0; /* 26 + 44 + 26 = the bubble's 96px */
+  font-size: 19px;
+}
+:root[data-tiles="bubble"] .tile-glass {
+  inset: 0 auto auto calc(50% - 48px);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  /* clear in the middle, bright at the rim, one small glint bottom right */
+  background:
+    radial-gradient(ellipse 7% 5% at 71% 80%, rgba(255, 255, 255, 0.9) 0 55%, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(circle closest-side, rgba(255, 255, 255, 0) 62%, rgba(214, 244, 255, 0.14) 80%,
+      rgba(255, 255, 255, 0.4) 95%, rgba(255, 255, 255, 0.7) 100%);
+  -webkit-backdrop-filter: var(--bubble-lens);
+  backdrop-filter: var(--bubble-lens);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.32), inset 0 -9px 16px rgba(130, 210, 255, 0.2),
+    0 8px 18px rgba(0, 45, 75, 0.2);
+}
+/* the soap film: a rainbow that only shows near the rim */
+:root[data-tiles="bubble"] .tile-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, #ff9fdc, #9fe4ff, #a8ffc4, #fff2a0, #ff9fdc, #8fd6ff, #a8ffc4, #ff9fdc);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 66%, rgba(0, 0, 0, 0.65) 90%, rgba(0, 0, 0, 0.2) 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 66%, rgba(0, 0, 0, 0.65) 90%, rgba(0, 0, 0, 0.2) 100%);
+  opacity: 0.8;
+}
+/* the window highlight, top left */
+:root[data-tiles="bubble"] .tile-glass::after {
+  content: "";
+  position: absolute;
+  left: 16%;
+  top: 11%;
+  width: 30%;
+  height: 17%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse closest-side, #fff 0 55%, rgba(255, 255, 255, 0) 100%);
+  transform: rotate(-32deg);
+}
+:root[data-tiles="bubble"] .tile:hover,
+:root[data-tiles="bubble"] .tile:focus-visible { transform: translateY(-4px) scale(1.04); }
+:root[data-tiles="bubble"] .tile:hover .tile-glass,
+:root[data-tiles="bubble"] .tile:focus-visible .tile-glass {
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.45), inset 0 -9px 16px rgba(130, 210, 255, 0.24),
+    0 0 0 2px rgba(124, 232, 255, 0.55), 0 0 22px rgba(124, 232, 255, 0.8);
+}
+
+:root[data-gfx="lite"] .tile:hover,
+:root[data-gfx="lite"] .tile:focus-visible { transform: none; }
+
+.defs { position: absolute; width: 0; height: 0; }
 
 /* --------------------------------------------------------------------------
    2. GADGETS: CLOCK + CALENDAR
@@ -311,12 +421,40 @@ body {
   position: fixed;
   right: 20px;
   bottom: 72px;
-  width: 264px;
+  width: 300px;
+  max-height: calc(100vh - 92px);
+  overflow-y: auto;
   padding: 12px 14px 8px;
   border-radius: 14px;
   /* Always dense enough to read, whichever tier is active */
   background: var(--shine), rgba(222, 245, 255, 0.82);
 }
+
+/* Wallpaper picker: small thumbnails, built the first time the panel opens */
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.wp-thumb {
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: 1px solid rgba(0, 70, 105, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #8fcdea;
+}
+.wp-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wp-thumb:hover { border-color: #fff; }
+.wp-thumb[aria-pressed="true"] {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--emerald), 0 0 8px rgba(36, 181, 140, 0.8);
+}
+.wp-thumb:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+#wp-credit { margin: 0 0 6px; }
+#wp-credit a { color: inherit; }
 .settings fieldset { margin: 0 0 10px; padding: 0; border: 0; }
 .settings legend { padding: 0; margin-bottom: 6px; font-weight: 700; }
 .note { margin: 6px 0 0; color: var(--ink-soft); font-size: 12px; }

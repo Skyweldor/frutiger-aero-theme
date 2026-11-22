@@ -1,6 +1,6 @@
 # Frutiger Aero Glass New Tab (prototype)
 
-A Chrome extension that replaces the New Tab page with a Frutiger Aero one: the suite's scenic wallpaper, a glass search box, glass tiles for your most visited sites, and clock and calendar gadgets. It works on Chromebooks and on Chrome for Windows, macOS and Linux.
+A Chrome extension that replaces the New Tab page with a Frutiger Aero one: a choice of wallpapers, a glass search box, your most visited sites as clear bubbles, and clock and calendar gadgets. It works on Chromebooks and on Chrome for Windows, macOS and Linux.
 
 This is a prototype. It is not on the Chrome Web Store yet.
 
@@ -24,6 +24,24 @@ The gear button (bottom right) has a **Graphics** setting:
 
 The same panel shows or hides the clock and the calendar.
 
+## Tiles
+
+The **Tiles** setting changes how the most visited sites are drawn:
+
+| Setting | What it looks like |
+| --- | --- |
+| Bubbles (default) | Each site sits in a round, clear bubble with a bright rim, a rainbow soap film and a highlight. On Full glass the wallpaper bends inside the bubble like a glass ball. |
+| Clear | A barely tinted pane with a gloss band and only a light blur, so the wallpaper shows through. |
+| Frosted | The original frosted squares. |
+
+## Wallpapers
+
+The **Wallpaper** setting shows a thumbnail for every wallpaper in `wallpapers/`. Click one to use it. Tick **New wallpaper on every new tab** to step through them in order.
+
+The page loads only the chosen wallpaper. Thumbnails load the first time the settings panel opens.
+
+Nine wallpapers were made for this project: bubbles, balloons and ribbons, each in a day, sunset and night version. The rest are by other people; `wallpapers/CREDITS.md` lists who made each one, its licence and where it came from, and the settings panel shows a credit line when one of them is selected.
+
 ## Permissions
 
 | Permission | Why |
@@ -38,5 +56,6 @@ The page makes no network requests and stores only its own settings, in the brow
 
 - `manifest.json`: the extension manifest (Manifest V3).
 - `newtab.html`, `newtab.css`, `newtab.js`: the page.
-- `wallpaper.jpg`: a copy of `assets/frutiger-aero-wallpaper.jpg`.
+- `wallpapers.js`: the list of wallpapers the page offers.
+- `wallpapers/`: the wallpapers, their thumbnails in `thumbs/`, and `CREDITS.md`.
 - `icons/`: the suite icon at 16, 48 and 128 px.
