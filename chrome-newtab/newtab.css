@@ -220,6 +220,13 @@ body {
   pointer-events: none;
 }
 .orb img { width: 24px; height: 24px; }
+/* White or very pale icons (dark-mode icons, for one) would vanish on the
+   white orb, so newtab.js gives those a deep aqua orb instead. The gloss is
+   toned down so it doesn't wash out the top of a white icon. */
+.orb[data-backing="dark"] {
+  background: radial-gradient(circle at 50% 30%, #5cc3ec 0%, #1678b4 52%, #0a4a78 100%);
+}
+.orb[data-backing="dark"]::after { opacity: 0.5; }
 .orb[data-hue] {
   background: radial-gradient(circle at 50% 30%,
     hsl(var(--h) 88% 70%) 0%, hsl(var(--h) 78% 46%) 55%, hsl(var(--h) 80% 34%) 100%);

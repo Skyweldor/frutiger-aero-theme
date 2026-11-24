@@ -22,7 +22,7 @@ The gear button (bottom right) has a **Graphics** setting:
 | Full glass | Frosted blur behind the glass, glows and hover motion. |
 | Lite | No blur and no motion. The glass becomes a flat see-through tint, which is cheap to draw on slower Chromebooks. |
 
-The same panel shows or hides the clock and the calendar.
+The same panel shows or hides the clock and the calendar. Both are off to start with.
 
 ## Tiles
 
@@ -34,13 +34,19 @@ The **Tiles** setting changes how the most visited sites are drawn:
 | Clear | A barely tinted pane with a gloss band and only a light blur, so the wallpaper shows through. |
 | Frosted | The original frosted squares. |
 
+Site icons that are white or very pale, such as sites that switch to a white icon when the browser is in dark mode, get a deep aqua orb so they stay visible. A site Chrome has no icon for shows a coloured letter instead.
+
 ## Wallpapers
 
-The **Wallpaper** setting shows a thumbnail for every wallpaper in `wallpapers/`. Click one to use it. Tick **New wallpaper on every new tab** to step through them in order.
+The **Wallpaper** setting shows a thumbnail for every wallpaper in `wallpapers/`. Click one to use it. **New wallpaper on every new tab** is on to start with: each new tab moves to the next wallpaper in the list, beginning with the bubbles day wallpaper on the very first tab. Untick it to keep the one you picked.
 
 The page loads only the chosen wallpaper. Thumbnails load the first time the settings panel opens.
 
 Nine wallpapers were made for this project: bubbles, balloons and ribbons, each in a day, sunset and night version. The rest are by other people; `wallpapers/CREDITS.md` lists who made each one, its licence and where it came from, and the settings panel shows a credit line when one of them is selected.
+
+## Matching browser colours
+
+The page can't change Chrome's tab strip, toolbar or address bar. For those, load one of the two colour themes in `../chrome-themes/`: Frutiger Aero Blue or Frutiger Aero Night.
 
 ## Permissions
 

@@ -12,29 +12,40 @@ const isExtension = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrom
 const DEFAULTS = {
   gfx: 'auto',
   tiles: 'bubble',
-  wallpaper: 'bubbles-day',
-  cycle: false,
-  clock: true,
-  calendar: true,
+  cycle: true,
+  clock: false,
+  calendar: false,
 };
+const DEFAULT_WALLPAPER = 'bubbles-day';
 
-function loadSettings() {
+function readStored(key) {
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('aero-newtab') || '{}') };
+    return JSON.parse(localStorage.getItem(key));
   } catch {
-    return { ...DEFAULTS };
+    return null;
   }
 }
 
-function saveSettings() {
+function writeStored(key, value) {
   try {
-    localStorage.setItem('aero-newtab', JSON.stringify(settings));
+    localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* private window or blocked storage: settings last for this tab only */
+    /* private window or blocked storage: changes last for this tab only */
   }
 }
 
-const settings = loadSettings();
+// Only what someone changes in the settings panel is saved. Anything they
+// never touched follows DEFAULTS, so a later version can change a default and
+// it reaches everyone who left that setting alone.
+const stored = readStored('aero-newtab');
+const chosen = stored && typeof stored === 'object' ? stored : {};
+const settings = { ...DEFAULTS, ...chosen };
+
+function choose(key, value) {
+  settings[key] = value;
+  chosen[key] = value;
+  writeStored('aero-newtab', chosen);
+}
 
 // ---------------------------------------------------------------------------
 // Graphics tiers
@@ -69,17 +80,32 @@ applyTiles();
 // ---------------------------------------------------------------------------
 const wallpapers = typeof WALLPAPERS !== 'undefined' ? WALLPAPERS : [];
 
+// The wallpaper showing now is kept apart from the settings: with cycling on
+// it changes on every new tab, and that shouldn't save the other settings too.
+// Version 0.2.0 kept it with the settings, so look there as well.
+const lastWallpaper = readStored('aero-newtab-wallpaper') ?? chosen.wallpaper ?? null;
+delete chosen.wallpaper;
+settings.wallpaper = lastWallpaper ?? DEFAULT_WALLPAPER;
+
 function applyWallpaper() {
-  const chosen = wallpapers.find((wp) => wp.id === settings.wallpaper) || wallpapers[0];
-  if (chosen) root.style.setProperty('--wallpaper', `url("wallpapers/${chosen.id}.jpg")`);
+  const current = wallpapers.find((wp) => wp.id === settings.wallpaper) || wallpapers[0];
+  if (current) root.style.setProperty('--wallpaper', `url("wallpapers/${current.id}.jpg")`);
+}
+
+function setWallpaper(id) {
+  settings.wallpaper = id;
+  writeStored('aero-newtab-wallpaper', id);
+  applyWallpaper();
 }
 
 // "New wallpaper on every new tab": step to the next one in the list each
-// time the page opens, wrapping round at the end.
-if (settings.cycle && wallpapers.length > 1) {
-  const current = wallpapers.findIndex((wp) => wp.id === settings.wallpaper);
-  settings.wallpaper = wallpapers[(current + 1) % wallpapers.length].id;
-  saveSettings();
+// time the page opens, wrapping round at the end. The very first visit shows
+// the default wallpaper.
+if (lastWallpaper === null) {
+  writeStored('aero-newtab-wallpaper', settings.wallpaper);
+} else if (settings.cycle && wallpapers.length > 1) {
+  const index = wallpapers.findIndex((wp) => wp.id === settings.wallpaper);
+  writeStored('aero-newtab-wallpaper', (settings.wallpaper = wallpapers[(index + 1) % wallpapers.length].id));
 }
 
 applyWallpaper(); // before first paint, like the tier
@@ -159,8 +185,94 @@ function siteName(site) {
 
 function monogram(orb, name) {
   orb.replaceChildren(document.createTextNode([...name][0].toUpperCase()));
+  delete orb.dataset.backing;
   orb.dataset.hue = '';
   orb.style.setProperty('--h', hueFor(name));
+}
+
+// ---------------------------------------------------------------------------
+// Site icons
+// ---------------------------------------------------------------------------
+// Two things can leave a bubble looking empty, so each icon is checked once it
+// has loaded:
+//  - Chrome has no icon stored for the site. It then returns its own plain
+//    default picture instead of an error, so the "error" fallback never runs.
+//    Those tiles get the coloured letter.
+//  - The icon is white or very pale. Some sites draw theirs white when the
+//    browser is in dark mode (ChatGPT does), which disappears on the white orb.
+//    Those tiles get a deep aqua orb instead.
+const ICON_SIZE = 32;
+
+function faviconUrl(pageUrl) {
+  return `${chrome.runtime.getURL('/_favicon/')}?pageUrl=${encodeURIComponent(pageUrl)}&size=${ICON_SIZE}`;
+}
+
+function iconUrl(site) {
+  if (site.favicon) return site.favicon; // some browsers hand icons over with the list
+  if (isExtension && site.url !== '#') return faviconUrl(site.url);
+  return null;
+}
+
+// The icon's pixels, drawn at ICON_SIZE square, or null if they can't be read.
+function iconPixels(img) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = ICON_SIZE;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, ICON_SIZE, ICON_SIZE);
+    return ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data;
+  } catch {
+    return null;
+  }
+}
+
+// Chrome's default picture, taken once from an address that can't have an icon.
+let defaultIconPixels;
+function chromeDefaultIcon() {
+  defaultIconPixels ??= new Promise((resolve) => {
+    if (!isExtension) return resolve(null);
+    const img = new Image();
+    img.addEventListener('load', () => resolve(iconPixels(img)));
+    img.addEventListener('error', () => resolve(null));
+    img.src = faviconUrl('https://example.invalid/');
+  });
+  return defaultIconPixels;
+}
+
+function samePicture(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  let difference = 0;
+  for (let i = 0; i < a.length; i++) difference += Math.abs(a[i] - b[i]);
+  return difference / a.length < 3;
+}
+
+// Share of the icon's area that shows up when it sits on a white orb: pixels
+// that, blended onto white, end up clearly different from white.
+function shareVisibleOnWhite(pixels) {
+  let visible = 0;
+  for (let i = 0; i < pixels.length; i += 4) {
+    const alpha = pixels[i + 3] / 255;
+    const darkest = Math.min(pixels[i], pixels[i + 1], pixels[i + 2]);
+    if (alpha * (255 - darkest) > 64) visible++;
+  }
+  return visible / (pixels.length / 4);
+}
+
+// Share of the icon's area that isn't see-through at all.
+function shareCovered(pixels) {
+  let covered = 0;
+  for (let i = 3; i < pixels.length; i += 4) if (pixels[i] > 40) covered++;
+  return covered / (pixels.length / 4);
+}
+
+async function checkIcon(img, orb, name) {
+  const pixels = iconPixels(img);
+  if (!pixels) return; // can't be read: leave the icon as it is
+  if (shareCovered(pixels) < 0.02 || samePicture(pixels, await chromeDefaultIcon())) {
+    monogram(orb, name);
+  } else if (shareVisibleOnWhite(pixels) < 0.02) {
+    orb.dataset.backing = 'dark';
+  }
 }
 
 function makeTile(site) {
@@ -176,11 +288,13 @@ function makeTile(site) {
 
   const orb = document.createElement('span');
   orb.className = 'orb';
-  if (isExtension && site.url !== '#') {
+  const src = iconUrl(site);
+  if (src) {
     const icon = document.createElement('img');
     icon.alt = '';
-    icon.src = `${chrome.runtime.getURL('/_favicon/')}?pageUrl=${encodeURIComponent(site.url)}&size=32`;
+    icon.addEventListener('load', () => checkIcon(icon, orb, name));
     icon.addEventListener('error', () => monogram(orb, name));
+    icon.src = src;
     orb.append(icon);
   } else {
     monogram(orb, name);
@@ -329,9 +443,7 @@ function buildWallpaperGrid() {
     thumb.src = `wallpapers/thumbs/${wp.id}.jpg`;
     button.append(thumb);
     button.addEventListener('click', () => {
-      settings.wallpaper = wp.id;
-      saveSettings();
-      applyWallpaper();
+      setWallpaper(wp.id);
       markWallpaper();
     });
     grid.append(button);
@@ -344,14 +456,14 @@ function markWallpaper() {
     button.setAttribute('aria-pressed', String(button.dataset.id === settings.wallpaper));
   }
   // Credit line for wallpapers that are someone else's work
-  const chosen = wallpapers.find((wp) => wp.id === settings.wallpaper);
+  const current = wallpapers.find((wp) => wp.id === settings.wallpaper);
   const credit = document.getElementById('wp-credit');
-  credit.hidden = !(chosen && chosen.credit);
+  credit.hidden = !(current && current.credit);
   if (credit.hidden) return;
-  const text = `${chosen.name}: ${chosen.credit}`;
-  if (chosen.page) {
+  const text = `${current.name}: ${current.credit}`;
+  if (current.page) {
     const link = document.createElement('a');
-    link.href = chosen.page;
+    link.href = current.page;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = text;
@@ -381,8 +493,7 @@ function initSettings() {
   for (const radio of panel.querySelectorAll('input[name="gfx"]')) {
     radio.checked = radio.value === settings.gfx;
     radio.addEventListener('change', () => {
-      settings.gfx = radio.value;
-      saveSettings();
+      choose('gfx', radio.value);
       applyTier();
       describeTier();
     });
@@ -391,8 +502,7 @@ function initSettings() {
   for (const radio of panel.querySelectorAll('input[name="tiles"]')) {
     radio.checked = radio.value === settings.tiles;
     radio.addEventListener('change', () => {
-      settings.tiles = radio.value;
-      saveSettings();
+      choose('tiles', radio.value);
       applyTiles();
     });
   }
@@ -400,17 +510,13 @@ function initSettings() {
   document.getElementById('wp-settings').hidden = wallpapers.length === 0;
   const cycle = document.getElementById('wp-cycle');
   cycle.checked = settings.cycle;
-  cycle.addEventListener('change', () => {
-    settings.cycle = cycle.checked;
-    saveSettings();
-  });
+  cycle.addEventListener('change', () => choose('cycle', cycle.checked));
 
   for (const [id, key] of [['show-clock', 'clock'], ['show-calendar', 'calendar']]) {
     const box = document.getElementById(id);
     box.checked = settings[key];
     box.addEventListener('change', () => {
-      settings[key] = box.checked;
-      saveSettings();
+      choose(key, box.checked);
       applyGadgets();
     });
   }
