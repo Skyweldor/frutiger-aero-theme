@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Frutiger Aero Night",
+  "version": "0.1.0",
+  "description": "A deep navy and aqua Frutiger Aero theme. Matches the Frutiger Aero Deep Aqua theme for VS Code.",
+  "theme": {
+    "images": {
+      "theme_frame": "images/frame.png",
+      "theme_frame_inactive": "images/frame-inactive.png",
+      "theme_toolbar": "images/toolbar.png"
+    },
+    "colors": {
+      "frame": [13, 50, 73],
+      "frame_inactive": [11, 37, 52],
+      "toolbar": [19, 74, 105],
+      "tab_text": [240, 251, 255],
+      "tab_background_text": [230, 247, 255],
+      "tab_background_text_inactive": [155, 212, 235],
+      "bookmark_text": [220, 244, 255],
+      "toolbar_text": [240, 251, 255],
+      "toolbar_button_icon": [143, 220, 255],
+      "omnibox_background": [11, 46, 66],
+      "omnibox_text": [255, 255, 255],
+      "ntp_background": [11, 46, 66],
+      "ntp_text": [240, 251, 255],
+      "ntp_link": [143, 220, 255]
+    }
+  }
+}

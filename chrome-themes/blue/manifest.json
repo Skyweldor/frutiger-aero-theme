@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Frutiger Aero Blue",
+  "version": "0.1.0",
+  "description": "A glossy sky-blue Frutiger Aero theme. Matches the Frutiger Aero Daylight theme for VS Code.",
+  "theme": {
+    "images": {
+      "theme_frame": "images/frame.png",
+      "theme_frame_inactive": "images/frame-inactive.png",
+      "theme_toolbar": "images/toolbar.png"
+    },
+    "colors": {
+      "frame": [93, 184, 226],
+      "frame_inactive": [90, 168, 204],
+      "toolbar": [219, 242, 252],
+      "tab_text": [8, 40, 59],
+      "tab_background_text": [8, 40, 59],
+      "tab_background_text_inactive": [11, 53, 80],
+      "bookmark_text": [11, 58, 85],
+      "toolbar_text": [8, 40, 59],
+      "toolbar_button_icon": [26, 111, 158],
+      "omnibox_background": [255, 255, 255],
+      "omnibox_text": [8, 40, 59],
+      "ntp_background": [219, 242, 252],
+      "ntp_text": [8, 40, 59],
+      "ntp_link": [11, 111, 168]
+    }
+  }
+}
