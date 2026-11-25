@@ -98,14 +98,33 @@ function setWallpaper(id) {
   applyWallpaper();
 }
 
-// "New wallpaper on every new tab": step to the next one in the list each
-// time the page opens, wrapping round at the end. The very first visit shows
-// the default wallpaper.
+function shuffle(list) {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+// "New wallpaper on every new tab" deals the wallpapers like a shuffled deck:
+// each one comes up once, in random order, before any comes up again, and a
+// new round never starts with the one just shown. What's left of the deck is
+// saved between tabs. A wallpaper added later joins at the next round.
+function nextShuffled(current) {
+  const ids = wallpapers.map((wp) => wp.id);
+  const saved = readStored('aero-newtab-deck');
+  let deck = Array.isArray(saved) ? saved.filter((id) => ids.includes(id) && id !== current) : [];
+  if (!deck.length) deck = shuffle(ids.filter((id) => id !== current));
+  const next = deck.shift();
+  writeStored('aero-newtab-deck', deck);
+  return next;
+}
+
+// The very first visit shows the default wallpaper.
 if (lastWallpaper === null) {
   writeStored('aero-newtab-wallpaper', settings.wallpaper);
 } else if (settings.cycle && wallpapers.length > 1) {
-  const index = wallpapers.findIndex((wp) => wp.id === settings.wallpaper);
-  writeStored('aero-newtab-wallpaper', (settings.wallpaper = wallpapers[(index + 1) % wallpapers.length].id));
+  writeStored('aero-newtab-wallpaper', (settings.wallpaper = nextShuffled(settings.wallpaper)));
 }
 
 applyWallpaper(); // before first paint, like the tier

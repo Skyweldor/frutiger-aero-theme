@@ -38,11 +38,11 @@ Site icons that are white or very pale, such as sites that switch to a white ico
 
 ## Wallpapers
 
-The **Wallpaper** setting shows a thumbnail for every wallpaper in `wallpapers/`. Click one to use it. **New wallpaper on every new tab** is on to start with: each new tab moves to the next wallpaper in the list, beginning with the bubbles day wallpaper on the very first tab. Untick it to keep the one you picked.
+The **Wallpaper** setting shows a thumbnail for every wallpaper in `wallpapers/`. Click one to use it. **New wallpaper on every new tab** is on to start with. The very first tab shows the bubbles day wallpaper; after that, each new tab shows a different one at random, and every wallpaper comes up once before any comes up again. Untick it to keep the one you picked.
 
 The page loads only the chosen wallpaper. Thumbnails load the first time the settings panel opens.
 
-Nine wallpapers were made for this project: bubbles, balloons and ribbons, each in a day, sunset and night version. The rest are by other people; `wallpapers/CREDITS.md` lists who made each one, its licence and where it came from, and the settings panel shows a credit line when one of them is selected.
+Nine wallpapers were made for this project: bubbles, balloons and ribbons, each in a day, sunset and night version. Glass chess is a new 3D render of a picture by Asadal, credited to the original. The rest are by other people; `wallpapers/CREDITS.md` lists who made each one, its licence and where it came from, and the settings panel shows a credit line when one of them is selected.
 
 ## Matching browser colours
 

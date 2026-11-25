@@ -3,13 +3,18 @@
 The bubbles, balloons and ribbons wallpapers were made for this project
 (rendered by `make_wallpapers.py`).
 
+The wallpapers below were rendered for this project as remakes of someone else's
+picture: new 3D scenes built to follow the original's composition.
+
+| Wallpaper | File | Remake of | By | Licence of the original | Source |
+| --- | --- | --- | --- | --- | --- |
+| Glass chess | `glass-chess.jpg` | 체스 속에 세계(표현의 자유) | Asadal | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [GongU Madang](https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200018&wrtSn=9048641) |
+
 The wallpapers below are by other people. Each was resized to fit the page; nothing else
 was changed.
 
 | Wallpaper | File | Made by | Original title | Licence | Source |
 | --- | --- | --- | --- | --- | --- |
-| Lotus pond | `asadal-stock-68.jpg` | Asadal |  | Not confirmed | Source page not found yet |
-| Glass chess | `asadal-stock-103.jpg` | Asadal | 체스 속에 세계(표현의 자유) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [GongU Madang](https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200018&wrtSn=9048641) |
 | Meadow laptop | `asadal-stock-108.jpg` | Asadal | 희망찬 도시 16(꿈의 표현) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [GongU Madang](https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200018&wrtSn=9046354) |
 | World in a screen | `asadal-stock-109.jpg` | Asadal |  | Not confirmed | Source page not found yet |
 | Globe | `asadal-stock-169.jpg` | Asadal |  | Not confirmed | Source page not found yet |
