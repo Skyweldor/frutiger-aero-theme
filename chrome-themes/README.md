@@ -14,9 +14,15 @@ They go well with the New Tab page in `../chrome-newtab/`, but each works on its
 1. Open `chrome://extensions` and turn on **Developer mode** (top right).
 2. Click **Load unpacked** and choose the `blue` or `night` folder.
 
-Chrome uses one theme at a time, so loading the other one replaces it. To go back to Chrome's own colours, open **Settings > Appearance** and click **Reset to default** next to Theme.
+Chrome uses one theme at a time, so loading the other one replaces it.
 
-A Chrome theme is a fixed set of colours: it doesn't switch between Blue and Night when the computer changes between light and dark mode. Pick the one you prefer.
+A Chrome theme is a fixed set of colours: it doesn't switch between Blue and Night when the computer changes between light and dark mode. Anyone who wants that can stay on Chrome's own colours, which do follow the computer's setting. So there are three choices:
+
+| Choice | How |
+| --- | --- |
+| Frutiger Aero Blue | Load the `blue` folder |
+| Frutiger Aero Night | Load the `night` folder |
+| Follow the computer's light or dark mode | No theme. If one is loaded, open **Settings > Appearance** and click **Reset to default** next to Theme |
 
 Other browsers built on Chromium, such as Brave and Edge, should accept the same folders. That hasn't been tested yet.
 

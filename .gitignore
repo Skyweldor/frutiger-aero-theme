@@ -2,3 +2,5 @@ node_modules/
 dist/
 *.vsix
 screenshots/outtakes/
+# Chrome writes this into a theme's folder when the theme is loaded unpacked
+Cached Theme.pak
